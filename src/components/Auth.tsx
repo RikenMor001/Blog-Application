@@ -1,22 +1,39 @@
 import { ChangeEvent, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { DATABASE_URL } from "../config";
 
 export const Auth = ({type}: {type: "signup" | "signin"}) => {
+    const navigate = useNavigate()
     const [userData, setUserData] = useState({
         name: "",
         email: "",
         password: ""
     });
+
+    async function sendRequests(){
+        try {
+            const response = await axios.post(`${DATABASE_URL}/api/v1/user/${ type === "signup" ? "signup" : "signin"}`, Inputs)
+            const jwt = response.data;
+            localStorage.setItem("token", jwt)
+            navigate("/blog")
+
+        } catch (e){
+            alert("Error while signing up")
+        }
+    }
+
     return (
         <div className="h-screen flex justify-center flex-col">
             <div className="flex justify-center">
                 <div>
                     <div className="font-extrabold text-4xl">
-                        Create an account
+
+                        {type === "signup" ? "Create an account" : "Log into account"}
                     </div>
                     <div className="text-slate-500 text-md">
-                        Already have an account? 
-                        <Link className="pl-2 underline" to="/signin"> Login </Link>
+                        { type === "signup" ? "Already have an account?" : "Don't have an account?"}
+                        <Link className="pl-2 underline" to={type === "signin" ? "/signup" : "/signin"}> {type === "signup" ? "SignIn" : "Signup"} </Link>
                     </div>
                 </div>
             </div>
@@ -32,14 +49,14 @@ export const Auth = ({type}: {type: "signup" | "signin"}) => {
                 />
                 </div>
                 <div className="mt-4">
-                    <Inputs  
+                    {type === "signup" ? <Inputs  
                     label="Email" 
                     placeholder="Enter your email"
                     onChange={(e) => setUserData(c => ({
                         ...c,
                         email: e.target.value
                     }))}
-                    />
+                    /> : null}
                 </div>
                 <div className="mt-4">
                     <Inputs  
@@ -52,8 +69,8 @@ export const Auth = ({type}: {type: "signup" | "signin"}) => {
                     />
                 </div>
                 <div className="flex justify-center mt-4" >
-                <button className="text-center bg-black text-white p-3 rounded-lg shadow-xl"> 
-                    <Link to={"/signin"}> Signup </Link>     
+                <button onClick = {sendRequests} className="text-center bg-black text-white p-3 rounded-lg shadow-xl"> 
+                    {type === "signup" ? "SignUp" : "Signn"}  
                 </button> 
             </div>
             </div>
